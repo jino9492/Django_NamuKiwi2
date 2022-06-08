@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Namukiwi</title>
+    <script>
+        Array.prototype.myJoin = function(seperator,start,end){
+                if(!start) start = 0;
+                if(!end) end = this.length - 1;
+                end++;
+                return this.slice(start,end).join(seperator);
+            };
+
+        function init(){
+            var content = `{{pageData.content}}`
+            var contentSegment = content.split(''); // split by spell
+
+            content = content.replaceAll('==\n', '==');
+            content = content.replace(/(\r\n|\n|\r)/gm, '<br>'); // take line break
+
+            console.log(contentSegment);
+
+            // combine contentSegment's element by if(rule)
+            var anchorStartIndex;
+            var anchorEndIndex;
+
+            var boldStartIndex;
+            var boldEndIndex;
+
+            var equalsStartIndex;
+            var equalsEndIndex;
+
+            var remarkStartIndex;
+            var remarkEndIndex;
+
+            var delStartIndex;
+            var delEndIndex;
+
+            var isAnchorStarted;
+            var isBoldStarted;
+            var isEqualsStarted;
+            var isRemarkStarted;
+            var isDelStarted;
+            for (var i  = 0; i < contentSegment.length; i++){
+
+                if (!isAnchorStarted && contentSegment[i] == '['){
+                    if (contentSegment[i + 1] == '['){
+                        anchorStartIndex = i;
+                        isAnchorStarted = true;
+                    }
+                }
+                else if (isAnchorStarted && contentSegment[i] == ']'){
+                    if (contentSegment[i + 1] == ']'){
+                        anchorEndIndex = i + 1;
+                        var newSegment = contentSegment.myJoin('', anchorStartIndex, anchorEndIndex);
+                        contentSegment.splice(anchorStartIndex, anchorEndIndex - anchorStartIndex + 1, newSegment);
+                        isAnchorStarted = false;
+                        i = anchorStartIndex;
+                    }
+                }
+                if (!isBoldStarted && contentSegment.slice(i, i + 18).join('') == '&#x27;&#x27;&#x27;'){
+                    boldStartIndex = i;
+                    isBoldStarted = true;
+
+                    i += (6 * 3 - 1);
+                }
+                else if (isBoldStarted && contentSegment.slice(i, i + 18).join('') == '&#x27;&#x27;&#x27;'){
+                    boldEndIndex = i + (6 * 3 - 1);
+                    var newSegment = contentSegment.myJoin('', boldStartIndex, boldEndIndex);
+                    contentSegment.splice(boldStartIndex, boldEndIndex - boldStartIndex + 1, newSegment);
+                    isBoldStarted = false;
+                    i = boldStartIndex;
+                }
+
+                if (!isEqualsStarted && contentSegment[i] == '='){
+                    if (contentSegment[i + 1] == '=' || (contentSegment[i + 2] == '=' && contentSegment[i + 1] == '=')){
+                        equalsStartIndex = i;
+                        isEqualsStarted = true;
+
+                        i += 1;
+                    }
+                }
+                else if (isEqualsStarted && contentSegment[i] == '='){
+                    if (contentSegment[i + 1] == '=' || (contentSegment[i + 2] == '=' && contentSegment[i + 1] == '=')){
+                        if (!(contentSegment[i + 2] == '=' && contentSegment[i + 1] == '='))
+                            equalsEndIndex = i + 1;
+                        else
+                            equalsEndIndex = i + 2;
+
+                        newSegment = contentSegment.myJoin('', equalsStartIndex, equalsEndIndex);
+
+                        contentSegment.splice(equalsStartIndex, equalsEndIndex - equalsStartIndex + 1, newSegment);
+
+                        isEqualsStarted = false;
+                        i = equalsStartIndex;
+                    }
+                }
+
+                if (!isRemarkStarted && contentSegment[i] == '['){
+                    if (contentSegment[i + 1] == '*'){
+                        remarkStartIndex = i;
+                        isRemarkStarted = true;
+                    }
+                }
+                else if (isRemarkStarted && contentSegment[i] == ']'){
+                    if (contentSegment[i + 1] != ']'){
+                        remarkEndIndex = i;
+                        var newSegment = contentSegment.myJoin('', remarkStartIndex, remarkEndIndex);
+                        contentSegment.splice(remarkStartIndex, remarkEndIndex - remarkStartIndex + 1, newSegment);
+                        isRemarkStarted = false;
+                        i = remarkStartIndex;
+                    }
+                }
+
+                if (!isDelStarted && contentSegment[i] == '~'){
+                    if (contentSegment[i + 1] == '~'){
+                        delStartIndex = i;
+                        isDelStarted = true;
+                    }
+                }
+                else if (isDelStarted && contentSegment[i] == '~'){
+                    if (contentSegment[i + 1] == '~'){
+                        delEndIndex = i + 1;
+                        var newSegment = contentSegment.myJoin('', delStartIndex, delEndIndex);
+                        contentSegment.splice(delStartIndex, delEndIndex - delStartIndex + 1, newSegment);
+                        isDelStarted = false;
+                        i = delStartIndex;
+                    }
+                }
+
+                if (contentSegment[i] == '\n'){
+                    isAnchorStarted = false;
+                    isBoldStarted = false;
+                    isEqualsStarted = false;
+                    isRemarkStarted = false;
+                    isDelStarted = false;
+
+                    if (contentSegment[i + 1] == ' '){
+                        if (contentSegment[i + 2] == '*')
+                            contentSegment.splice(i + 1, 2, contentSegment.myJoin('', i + 1, i + 2));
+                    }
+                }
+            }
+
+            console.log(contentSegment);
+
+            // effect of element coverd by specific sign
+            var equalsCount = 1;
+            var equalsCount2 = 1;
+            var anchorCount = 1;
+            var remarkCount = 1;
+            contentSegment.forEach(element =>{
+
+                if(element.includes("&#x27;&#x27;&#x27;") && element.includes("&#x27;&#x27;&#x27;")){
+                    var newContentSegment = element.bold();
+
+                    newContentSegment = newContentSegment.replace("&#x27;&#x27;&#x27;", '');
+                    newContentSegment = newContentSegment.replace("&#x27;&#x27;&#x27;", '');
+
+                    content = content.replace(element, newContentSegment);
+                    element = newContentSegment;
+                }
+
+                if(element.includes('[[') && element.includes(']]')){
+                    var newContentSegment = element;
+
+                    newContentSegment = newContentSegment.replace('[[', '');
+                    newContentSegment = newContentSegment.replace(']]', '');
+
+                    var newContetSegmentName = newContentSegment;
+
+                    newContentSegment = newContentSegment.replaceAll(' ', '');
+
+                    var anchorNickname;
+                    var anchorNicknameIndex
+                    var hasNickname;
+
+                    if (newContentSegment.includes('|')){
+                        anchorNicknameIndex = newContentSegment.indexOf('|');
+                        anchorNickname = newContentSegment.slice(anchorNicknameIndex + 1, newContentSegment.length);
+                        newContentSegment = newContentSegment.replace(anchorNickname, '');
+                        newContentSegment = newContentSegment.replace('|', '');
+
+                        hasNickname = true;
+                    }
+
+                    if (checkURL(newContentSegment)){
+                        newContentSegment = `<div class="tool-tip">링크 : ${newContentSegment}</div><a href="${newContentSegment}" class="anchor anchor-valid anchor-url" target="_blank" onmouseover="document.getElementsByClassName('tool-tip')[${anchorCount - 1}].style.display = 'inline-block'; setTimeout(function(){document.getElementsByClassName('tool-tip')[${anchorCount - 1}].style.opacity = 1;}, 700);" onmouseout="document.getElementsByClassName('tool-tip')[${anchorCount - 1}].style.display = 'none'; document.getElementsByClassName('tool-tip')[${anchorCount - 1}].style.opacity = 0;"><div style="width: 12px; line-height: 8px; text-align:center; background-color:green; color:white!important; padding:3px; padding-bottom:5px; border-radius:2px; display:inline-block; margin-right:2px;">&#8766</div>` + (hasNickname? anchorNickname:newContetSegmentName) + `</a>`;
+                    }
+                    else{
+                        var url = 'https://namukiwi.run.goorm.io/' + newContentSegment + `/`;
+                        var string = new Array();
+                        string.push(`{% for data in pageDataList %} {{data.subject}} {% endfor %}`);
+                        string = string[0].split(' ');
+
+                        if (url.includes('<b>')){
+                            url = url.replace('<b>', '');
+                            url = url.replace('</b>', '');
+                        }
+
+                        var subject = newContentSegment;
+
+                        if (subject.includes('<b>')){
+                            subject = subject.replace('<b>', '');
+                            subject = subject.replace('</b>', '');
+                        }
+
+                        console.log(subject);
+                        for (var i = 0; i < string.length; i++){
+                            if (subject == string[i]){
+                                newContentSegment = `<div class="tool-tip">문서 : ${subject}</div><a href="${url}" class="anchor anchor-valid" onmouseover="document.getElementsByClassName('tool-tip')[${anchorCount - 1}].style.display = 'inline-block'; setTimeout(function(){document.getElementsByClassName('tool-tip')[${anchorCount - 1}].style.opacity = 1;}, 700);" onmouseout="document.getElementsByClassName('tool-tip')[${anchorCount - 1}].style.display = 'none'; document.getElementsByClassName('tool-tip')[${anchorCount - 1}].style.opacity = 0;">` + (hasNickname? anchorNickname:newContetSegmentName) + `</a>`;
+                                break;
+                            }
+                            else{
+                                newContentSegment = `<div class="tool-tip">문서 누락</div><del><a href="{% url 'kiwi:CreatePage' %}" class="anchor anchor-invalid" onmouseover="document.getElementsByClassName('tool-tip')[${anchorCount - 1}].style.display = 'inline-block'; setTimeout(function(){document.getElementsByClassName('tool-tip')[${anchorCount - 1}].style.opacity = 1;}, 700);" onmouseout="document.getElementsByClassName('tool-tip')[${anchorCount - 1}].style.display = 'none'; document.getElementsByClassName('tool-tip')[${anchorCount - 1}].style.opacity = 0;">` + (hasNickname? anchorNickname:newContetSegmentName) + `</a></del>`;
+                            }
+                        }
+
+                    }
+
+
+                    content = content.replace(element, newContentSegment);
+                    element = newContentSegment;
+                    anchorCount++;
+                }
+
+                if(element.includes("===") && element.includes("===")){
+                    var newContentSegment = `<h2 class="subtitle"><a id="s-${equalsCount - 1}-${equalsCount2}" class="subtitle-number2" href="#toc">${equalsCount - 1}.${equalsCount2}.</a><div class="subtitle-content2">`+ element + `</div></h2><hr>`;
+
+                    newContentSegment = newContentSegment.replace("===", '');
+                    newContentSegment = newContentSegment.replace("===", '');
+
+                    content = content.replace(element, newContentSegment);
+                    element = newContentSegment;
+
+                    equalsCount2++;
+                }
+                else if(element.includes("==") && element.includes("==")){
+                    var newContentSegment = `<h1 class="subtitle"><a id="s-${equalsCount}" class="subtitle-number" href="#toc">${equalsCount}.</a><div class="subtitle-content">` + element + `</div></h1><hr>`;
+
+                    newContentSegment = newContentSegment.replace("==", '');
+                    newContentSegment = newContentSegment.replace("==", '');
+
+                    content = content.replace(element, newContentSegment);
+                    element = newContentSegment;
+
+                    equalsCount++;
+                }
+
+                if(element.includes("[*") && element.includes("]") && !element.includes("]]")){
+                    var newContentSegment = element;
+
+                    var originalContentSegment = newContentSegment;
+
+                    newContentSegment = newContentSegment.replaceAll(" ", '');
+
+                    newContentSegment = newContentSegment.replace("[*", '');
+                    newContentSegment = newContentSegment.replace("]", '');
+
+                    if (originalContentSegment[1] == ' ')
+                        originalContentSegment = originalContentSegment[1].replace(" ", '');
+
+                    originalContentSegment = originalContentSegment.replace("[*", '');
+                    originalContentSegment = originalContentSegment.replace("]", '');
+
+                    var wrapperDiv = document.createElement('div');
+                    wrapperDiv.setAttribute('class', 'remark-wrapper');
+
+
+
+                    var remarkNumber = document.createElement('a');
+                    remarkNumber.innerHTML = '[' + remarkCount + ']';
+                    remarkNumber.setAttribute('class', 'remark-number');
+                    remarkNumber.setAttribute('href', '#remark-in-content-' + remarkCount);
+                    remarkNumber.setAttribute('id', 'remark-' + remarkCount);
+
+                    var remark = document.createElement('div');
+                    remark.appendChild(remarkNumber);
+
+                    remark.innerHTML = remark.innerHTML + "&nbsp;" + originalContentSegment;
+                    remark.setAttribute('class', 'remark-content');
+                    wrapperDiv.appendChild(remark);
+
+
+                    var remarkDiv = document.getElementsByClassName('remark')[0];
+                    remarkDiv.appendChild(wrapperDiv);
+
+
+
+                    newContentSegment = `<div class="remark-container"><div class="remark-pop-up" id="remark-pop-up-${remarkCount}" onmouseover="document.getElementsByClassName('remark-pop-up')[${remarkCount - 1}].style.display = 'inline-block';" onmouseout="document.getElementsByClassName('remark-pop-up')[${remarkCount - 1}].style.display = 'none';"><a class="remark-anchor" href="#remark-${remarkCount}">[${remarkCount}]</a> ${originalContentSegment}</div><a class="remark-anchor" href="#remark-${remarkCount}" id="remark-in-content-${remarkCount}" onmouseover="document.getElementsByClassName('remark-pop-up')[${remarkCount - 1}].style.display = 'inline-block';" onmouseout="document.getElementsByClassName('remark-pop-up')[${remarkCount - 1}].style.display = 'none';"><sup>[` + remarkCount + `]</sup></a></div>`;
+
+                    remarkCount++;
+
+                    content = content.replace(element, newContentSegment);
+                    element = newContentSegment;
+                }
+
+                if(element.includes("~~") && element.includes("~~")){
+                    var newContentSegment = `<del style="color:gray;">` + element + `</del>`;
+
+                    newContentSegment = newContentSegment.replace("~~", '');
+                    newContentSegment = newContentSegment.replace("~~", '');
+
+                    content = content.replace(element, newContentSegment);
+                    element = newContentSegment;
+                }
+
+                if (element.includes(' *')){
+                    var newContentSegment = `<div class="list-item"></div>`;
+
+                    content = content.replace('<br>' + ' *','<br>' + newContentSegment);
+                    element = newContentSegment;
+                }
+            });
+
+            var contentDiv = document.getElementsByClassName('content')[0];
+            contentDiv.innerHTML = content + '  ';
+
+            var contentList = document.getElementsByClassName('content-list')[0];
+            var contentListElement = document.getElementsByClassName('subtitle-content');
+            var contentListElement2 = document.getElementsByClassName('subtitle-content2');
+
+            for (var i = 0; i < contentListElement.length; i++){
+                var wrapperDiv = document.createElement('div');
+                wrapperDiv.setAttribute('class', 'content-list-wrapper');
+
+                var div = document.createElement('div');
+                div.innerHTML += contentListElement[i].textContent;
+                div.setAttribute('class', 'content-list-content');
+
+                var anchor = document.createElement('a');
+                anchor.innerHTML = (i + 1) + '. ';
+                anchor.setAttribute('href', '#s-' + (i + 1));
+                anchor.setAttribute('class', 'content-list-anchor');
+
+                wrapperDiv.appendChild(anchor);
+                wrapperDiv.appendChild(div);
+
+                contentList.appendChild(wrapperDiv);
+                history.scrollRestoration = "manual";
+                console.log(contentListElement);
+                for (var j = 0; j < contentListElement2.length; j++){
+                    if (document.getElementById(`s-${i + 1}-${j + 1}`) == undefined)
+                        break;
+                    var wrapperDiv2 = document.createElement('div');
+                    wrapperDiv2.setAttribute('class', 'content-list-wrapper2');
+
+                    var div = document.createElement('div');
+                    div.innerHTML += contentListElement2[j].textContent;
+                    div.setAttribute('class', 'content-list-content2');
+
+                    var anchor = document.createElement('a');
+                    anchor.innerHTML = (i + 1) + '.' + (j + 1) + '. ';
+                    anchor.setAttribute('href', '#s-' + (i + 1) + '-' + (j + 1));
+                    anchor.setAttribute('class', 'content-list-anchor2');
+
+                    wrapperDiv2.appendChild(anchor);
+                    wrapperDiv2.appendChild(div);
+
+                    contentList.appendChild(wrapperDiv2);
+                }
+            }
+        }
+
+        function checkURL(url){
+            //url 유효성 검사
+              var pattern = new RegExp('^(https?:\\/\\/)?'+ // protocol
+                '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|'+ // domain name
+                '((\\d{1,3}\\.){3}\\d{1,3}))'+ // OR ip (v4) address
+                '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*'+ // port and path
+                '(\\?[;&a-z\\d%_.~+=-]*)?'+ // query string
+                '(\\#[-a-z\\d_]*)?$','i'); // fragment locator
+
+            return pattern.test(url);
+        }
+    </script>
+    <style>
+        body{
+            background-color: #efefef;
+            margin: 0;
+        }
+
+        .list-item{
+            display: inline-block;
+        }
+
+        .list-item::before{
+            content: "\2022";
+            margin-right: 5px;
+        }
+
+        .anchor-url{
+            color: #090!important;
+            font-weight: 600;
+        }
+
+        .content-wrapper{
+            position: relative;
+
+            width: 1300px;
+            margin: 0 auto;
+            border: 1px solid #ccc;
+            padding: 25px;
+            box-sizing: border-box;
+            background-color: white;
+        }
+
+        .content{
+            font-size: 0.9em;
+        }
+
+        .modify_date{
+            display: inline-block;
+            position: absolute;
+            top: 66px;
+            right: 25px;
+
+            font-size: 0.8em;
+        }
+
+        .buttons{
+            display: inline-block;
+            position: absolute;
+            height: 33px;
+            right: 25px;
+        }
+
+        .buttons > button{
+            height: 33px;
+            width: 60px;
+            background-color: white;
+            border: 1px solid #ccc;
+            padding: 0;
+        }
+
+        .buttons > button:not(:last-child){
+            border-right: none;
+        }
+
+        .buttons{
+            background-color: #efefef;
+        }
+
+        .buttons > button > a{
+            display: inline-block;
+            width: 58px;
+            height: 31px;
+            line-height: 33px;
+            text-decoration: none;
+            padding: 0;
+            color : black;
+            background-color: white;
+        }
+
+        .buttons > button > a:hover{
+            background-color: #efefef;
+        }
+
+        .subject{
+            display: inline-block;
+            font-weight: bold;
+            font-size: 3em;
+        }
+
+        .content-list{
+            width: 200px;
+            display: flex;
+            border: 1px solid #ccc;
+            padding: 10px;
+            flex-direction: column;
+
+            margin-bottom: 20px;
+            box-sizing: border-box;
+
+            font-size: 0.9em;
+        }
+
+        .content-list > div{
+            margin-top: 2px;
+            margin-bottom: 2px;
+        }
+
+        .content-list-wrapper2{
+            margin-left: 20px;
+        }
+
+        .anchor-valid, .anchor-invalid, .content-list-anchor, .content-list-anchor2, .remark-number, .remark-anchor, .subtitle-number, .subtitle-number2{
+            text-decoration: none;
+            color: #0275d8;
+        }
+
+        .anchor:hover, .subtitle-number:hover,.subtitle-number2:hover, .content-list-anchor:hover, .remark-number:hover, .remark-anchor:hover{
+            text-decoration: underline;
+        }
+
+        .subtitle-number, .subtitle-number2, .subtitle-content, .subtitle-content2, .content-list-content, .content-list-content2, .content-list-wrapper, .content-list-wrapper2, .remark-content{
+            display: inline-block;
+        }
+
+        .subtitle-content, .subtitle-content2{
+            margin-left: 5px;
+        }
+
+        .anchor-invalid{
+            color: red;
+        }
+
+        .remark-container{
+            display: inline-block;
+            position: relative;
+        }
+
+        .remark-pop-up{
+            display: none;
+            position: absolute;
+            transform: translate(-50%, -100%);
+            max-width: 800px;
+            width: max-content;
+
+            border-radius: 4px;
+            background: white;
+            border: 1px solid #e3e3e3;
+            padding: 18px 14px;
+
+            font-size: 0.9em;
+
+            z-index: 1;
+        }
+
+        .remark-wrapper{
+            margin-bottom: 2px;
+            font-size: 0.9em;
+        }
+
+        .remark-content{
+            max-width: 1230px;
+        }
+
+        .tool-tip{
+            display: none;
+            position: absolute;
+            transform: translate(-50%, 100%);
+            max-width: 800px;
+            line-height: 12px;
+            height: 12px;
+            width: max-content;
+            font-size: 0.7em;
+
+            opacity: 0;
+
+            background: white;
+            border: 1px solid black;
+            padding: 6px;
+
+            z-index: 1;
+        }
+
+        del:hover{
+            text-decoration: none;
+        }
+
+        h1, h2{
+            margin: 0;
+        }
+
+        .serach{
+            display: inline-block;
+        }
+
+        header{
+            display: flex;
+            justify-content: space-around;
+            background-color: #192842;
+            height: 50px;
+        }
+
+        header > h1{
+            color: white;
+            line-height: 50px;
+        }
+
+        header > form > .search{
+            background-color: white;
+            border: none;
+            border-right: 1px solid #efefef;
+            border-left: 1px solid #efefef;
+            box-sizing: border-box;
+            outline: none;
+            width: 300px;
+            height: 50px;
+        }
+
+        .search-img-wrapper{
+            display: inline-block;
+            position: relative;
+            top: -4px;
+            background-color: white;
+            height: 50px;
+            width: 50px;
+            text-align: center;
+
+            cursor: pointer;
+        }
+
+        .search-img-wrapper > .search-img{
+            display: inline-block;
+            position: relative;
+            top: 10px;
+            font-weight: bold;
+            font-size: 1.5em;
+            text-align: center;
+            transform: rotate(45deg);
+
+            pointer-events: none;
+            user-select: none;
+        }
+    </style>
+</head>
+<body onload="init()">
+    <div>
+        <header>
+            <h1>Namukiwi</h1>
+            <form id="serach-form" method="post" action="{% url 'kiwi:MainPage' %}">
+                {% csrf_token %}
+                <input class="search" name="search"><div class="search-img-wrapper" onclick="document.getElementById('serach-form').submit();"><div class="search-img">&#9906;</div></div>
+            </form>
+        </header>
+        <div class="content-wrapper">
+            <div class="buttons">
+                <button><a href="{% url 'kiwi:CreatePage' %}" class="create">새 문서</a></button><button><a href="{% url 'kiwi:EditPage' pageData.subject %}" class="edit-button">편집</a></button><button><a href="{% url 'kiwi:MainPage' %}" class="main">메인</a></button>
+            </div>
+            <div class="modify_date">최근 수정 시각 : {{pageData.modify_date|date:"Y/m/d H:i"}}</div>
+            <div class="subject">{{pageData.subject}}</div>
+            <div style="height: 100px; width: 1300px;"></div>
+            <div id="toc" class="content-list">
+                <div>목차</div>
+                <br>
+            </div>
+            <div class="content"></div>
+            <br>
+            <hr>
+            <div class="remark"></div>
+            <br>
+            <br>
+        </div>
+    </div>
+</body>
+</html>

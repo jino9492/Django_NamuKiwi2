@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Namukiwi</title>
+    <style>
+        body{
+            margin : 0;
+            background-color: #efefef;
+        }
+
+        h1{
+            display: inline-block;
+            margin-top: 0;
+        }
+
+        h1 > div {
+            display: inline-block;
+            font-size: 0.7em;
+            font-weight: 200;
+        }
+
+        .editor{
+            width: 1225px;
+            height: 750px;
+            outline: none;
+            border: 1px solid #D6D6D6;
+            border-radius: 4px;
+
+            padding: 10px;
+        }
+
+        .content-wrapper{
+            position: relative;
+            background-color: white;
+            border: 1px solid #ccc;
+            width: 1300px;
+            box-sizing: border-box;
+            padding: 25px;
+            padding-bottom: 60px;
+            margin: 0 auto;
+        }
+
+        .buttons{
+            display: inline-block;
+            position: absolute;
+            height: 33px;
+            right: 25px;
+
+            background-color: #efefef;
+        }
+
+        .buttons > button{
+            height: 33px;
+            width: 60px;
+            border: 1px solid #ccc;
+
+            background-color: white;
+
+            padding: 0;
+        }
+
+        .buttons > button:not(:last-child){
+            border-right: none;
+        }
+
+        .buttons > button > a{
+            display: inline-block;
+            width: 60px;
+            position:relative;
+            height: 31px;
+            line-height: 33px;
+            text-decoration: none;
+            padding: 0;
+            color : black;
+            background-color: white;
+        }
+
+        .buttons > button > a:hover{
+            background-color: #efefef;
+        }
+
+        .buttons > button > .delete:hover{
+            background-color: #F08080;
+        }
+
+        .buttons > button > .delete{
+            color: white;
+            background-color: #D9534F;
+        }
+
+        .buttons > button > .main{
+            width: 58px;
+        }
+
+        .submit{
+            float: right;
+            width: 100px;
+            line-height: 33px;
+            background-color: #0275d8;
+            border: 1px solid white;
+            color: white;
+            margin-top: 10px;
+        }
+
+        .submit:hover{
+            cursor: pointer;
+            background-color: #23395d;
+        }
+
+        .disabled{
+            background-color: #B8DFF8;
+        }
+
+        .disabled:hover{
+            cursor: default;
+        }
+
+        .serach{
+            display: inline-block;
+        }
+
+        header{
+            display: flex;
+            justify-content: space-around;
+            background-color: #192842;
+            height: 50px;
+        }
+
+        header > h1{
+            color: white;
+            line-height: 50px;
+        }
+
+        header > form > .search{
+            background-color: white;
+            border: none;
+            border-right: 1px solid #efefef;
+            border-left: 1px solid #efefef;
+            box-sizing: border-box;
+            outline: none;
+            width: 300px;
+            height: 50px;
+        }
+
+        .search-img-wrapper{
+            display: inline-block;
+            position: relative;
+            top: -4px;
+            background-color: white;
+            height: 50px;
+            width: 50px;
+            text-align: center;
+
+            cursor: pointer;
+        }
+
+        .search-img-wrapper > .search-img{
+            display: inline-block;
+            position: relative;
+            top: 10px;
+            font-weight: bold;
+            font-size: 1.5em;
+            text-align: center;
+            transform: rotate(45deg);
+
+            pointer-events: none;
+            user-select: none;
+        }
+    </style>
+    <script>
+        function changeContent() {
+            var editor = document.getElementsByClassName('editor')[0];
+            var content = `{{ pageData.content }}`;
+
+            editor.innerHTML = content;
+        }
+
+        function confirmDelete(){
+            var anchor = document.getElementsByClassName('delete')[0];
+            if(confirm("정말로 삭제하시겠습니까?")) {
+                location.href = anchor.getAttribute('dataURL');
+            }
+        }
+
+        function checkInputData() {
+            var button = document.getElementsByClassName('submit')[0];
+            var inputs = new Array();
+            inputs.push(document.getElementsByClassName('editor')[0]);
+
+            console.log(inputs);
+
+            var isEmpty = false;
+
+            for (var i = 0; i < inputs.length; i++){
+                if (inputs[i].value == '') {
+                    isEmpty = true;
+                    break;
+                }
+                else {
+                    isEmpty = false;
+                }
+            }
+
+            if (isEmpty){
+                button.disabled = true;
+                button.setAttribute('class', 'submit disabled');
+            }
+            else{
+                button.disabled = false;
+                button.setAttribute('class', 'submit')
+            }
+        }
+
+        window.addEventListener('keyup', event=>{
+           checkInputData();
+        });
+    </script>
+</head>
+<body onload="changeContent()">
+    <header>
+        <h1>Namukiwi</h1>
+        <form id="serach-form" method="post" action="{% url 'kiwi:MainPage' %}">
+            {% csrf_token %}
+            <input class="search" name="search"><div class="search-img-wrapper" onclick="document.getElementById('serach-form').submit();"><div class="search-img">&#9906;</div></div>
+        </form>
+    </header>
+    <div class="content-wrapper">
+        <div class="buttons">
+            <button><a href="{% url 'kiwi:CreatePage' %}" class="create">새 문서</a></button><button><a href="#" class="delete" dataURL="{% url 'kiwi:DeletePage' pageData.subject %}" onclick="confirmDelete()">삭제</a></button><button><a href="{% url 'kiwi:MainPage' %}" class="main">메인</a></button>
+        </div>
+        <h1>문서 : {{pageData.subject}} <div>(편집)</div></h1>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.content }}
+            <button type="submit" class="submit">제출</button>
+        </form>
+    </div>
+</body>
+</html>
