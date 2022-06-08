@@ -10,28 +10,28 @@
             margin : 0;
             background-color: #efefef;
         }
-
+        
         h1{
             display: inline-block;
             margin-top: 0;
         }
-
+        
         h1 > div {
             display: inline-block;
             font-size: 0.7em;
             font-weight: 200;
         }
-
+        
         .editor{
             width: 1225px;
             height: 750px;
             outline: none;
-            border: 1px solid #D6D6D6;
+            border: 1px solid #D6D6D6; 
             border-radius: 4px;
 
             padding: 10px;
         }
-
+        
         .content-wrapper{
             position: relative;
             background-color: white;
@@ -42,30 +42,30 @@
             padding-bottom: 60px;
             margin: 0 auto;
         }
-
+        
         .buttons{
             display: inline-block;
             position: absolute;
             height: 33px;
             right: 25px;
-
+            
             background-color: #efefef;
         }
-
+        
         .buttons > button{
             height: 33px;
             width: 60px;
             border: 1px solid #ccc;
-
+            
             background-color: white;
-
+            
             padding: 0;
         }
-
+        
         .buttons > button:not(:last-child){
             border-right: none;
         }
-
+        
         .buttons > button > a{
             display: inline-block;
             width: 60px;
@@ -77,24 +77,24 @@
             color : black;
             background-color: white;
         }
-
+        
         .buttons > button > a:hover{
             background-color: #efefef;
         }
-
+        
         .buttons > button > .delete:hover{
             background-color: #F08080;
         }
-
+        
         .buttons > button > .delete{
             color: white;
             background-color: #D9534F;
         }
-
+        
         .buttons > button > .main{
             width: 58px;
         }
-
+        
         .submit{
             float: right;
             width: 100px;
@@ -104,36 +104,36 @@
             color: white;
             margin-top: 10px;
         }
-
+        
         .submit:hover{
             cursor: pointer;
             background-color: #23395d;
         }
-
+        
         .disabled{
             background-color: #B8DFF8;
         }
-
+        
         .disabled:hover{
             cursor: default;
         }
-
+        
         .serach{
             display: inline-block;
         }
-
+        
         header{
             display: flex;
             justify-content: space-around;
             background-color: #192842;
             height: 50px;
         }
-
+        
         header > h1{
             color: white;
             line-height: 50px;
         }
-
+        
         header > form > .search{
             background-color: white;
             border: none;
@@ -144,7 +144,7 @@
             width: 300px;
             height: 50px;
         }
-
+        
         .search-img-wrapper{
             display: inline-block;
             position: relative;
@@ -153,10 +153,10 @@
             height: 50px;
             width: 50px;
             text-align: center;
-
+            
             cursor: pointer;
         }
-
+        
         .search-img-wrapper > .search-img{
             display: inline-block;
             position: relative;
@@ -165,7 +165,7 @@
             font-size: 1.5em;
             text-align: center;
             transform: rotate(45deg);
-
+            
             pointer-events: none;
             user-select: none;
         }
@@ -174,17 +174,17 @@
         function changeContent() {
             var editor = document.getElementsByClassName('editor')[0];
             var content = `{{ pageData.content }}`;
-
+            
             editor.innerHTML = content;
         }
-
+        
         function confirmDelete(){
             var anchor = document.getElementsByClassName('delete')[0];
             if(confirm("정말로 삭제하시겠습니까?")) {
                 location.href = anchor.getAttribute('dataURL');
             }
         }
-
+        
         function checkInputData() {
             var button = document.getElementsByClassName('submit')[0];
             var inputs = new Array();
@@ -213,9 +213,9 @@
                 button.setAttribute('class', 'submit')
             }
         }
-
+        
         window.addEventListener('keyup', event=>{
-           checkInputData();
+           checkInputData(); 
         });
     </script>
 </head>

@@ -5,23 +5,23 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Namukiwi</title>
-
+    
     <style>
         body{
             margin : 0;
             background-color: #efefef;
         }
-
+        
         h1{
             display: inline-block;
             margin-top: 0;
         }
-
+        
         .list-wrapper{
             display: flex;
             flex-direction: column;
         }
-
+        
         .content-wrapper{
             position: relative;
             background-color: white;
@@ -32,23 +32,23 @@
             padding-bottom: 60px;
             margin: 0 auto;
         }
-
+        
         .list-wrapper > div > a{
             text-decoration: none;
             color: #0275d8;
         }
-
+        
         .list-wrapper > div > a:hover{
             text-decoration: underline;
         }
-
+        
         .buttons{
             display: inline-block;
             position: absolute;
             height: 33px;
             right: 25px;
         }
-
+        
         .buttons > button{
             height: 33px;
             width: 60px;
@@ -56,15 +56,15 @@
             border: 1px solid #ccc;
             padding: 0;
         }
-
+        
         .buttons > button:not(:last-child){
             border-right: none;
         }
-
+        
         .buttons{
             background-color: #efefef;
         }
-
+        
         .buttons > button > a{
             display: inline-block;
             width: 58px;
@@ -75,27 +75,27 @@
             color : black;
             background-color: white;
         }
-
+        
         .buttons > button > a:hover{
             background-color: #efefef;
         }
-
+        
         .serach{
             display: inline-block;
         }
-
+        
         header{
             display: flex;
             justify-content: space-around;
             background-color: #192842;
             height: 50px;
         }
-
+        
         header > h1{
             color: white;
             line-height: 50px;
         }
-
+        
         header > form > .search{
             background-color: white;
             border: none;
@@ -106,7 +106,7 @@
             width: 300px;
             height: 50px;
         }
-
+        
         .search-img-wrapper{
             display: inline-block;
             position: relative;
@@ -115,10 +115,10 @@
             height: 50px;
             width: 50px;
             text-align: center;
-
+            
             cursor: pointer;
         }
-
+        
         .search-img-wrapper > .search-img{
             display: inline-block;
             position: relative;
@@ -127,7 +127,7 @@
             font-size: 1.5em;
             text-align: center;
             transform: rotate(45deg);
-
+            
             pointer-events: none;
             user-select: none;
         }
@@ -135,19 +135,19 @@
     <script>
         window.onload = function(){
             var search = document.getElementsByClassName('search')[0];
-
+            
             search.value = `{{ searchData }}`;
             filter_search();
         }
-
+        
         window.addEventListener('keyup', event=>{
-            filter_search();
+            filter_search();                        
         });
-
+        
         function filter_search(){
             var search = document.getElementsByClassName('search')[0];
             var list = document.getElementsByClassName('list-anchor');
-
+            
             if (search.value != ''){
                 for (var i = 0; i < list.length; i++){
                     if (getConstantVowel(list[i].text).toLowerCase().replaceAll(' ', '').includes(getConstantVowel(search.value).toLowerCase().replaceAll(' ', ''))){
@@ -156,7 +156,7 @@
                     else{
                         list[i].style.display = 'none';
                     }
-                }
+                }    
                 console.log(getConstantVowel(search.value));
             }
             else{
@@ -165,7 +165,7 @@
                 }
             }
         }
-
+        
         function getConstantVowel(kor) {
             const f = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ',
                        'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ',
@@ -177,25 +177,25 @@
                        'ㄷ', 'ㄹ', 'ㄺ', 'ㄻ', 'ㄼ', 'ㄽ', 'ㄾ',
                        'ㄿ', 'ㅀ', 'ㅁ', 'ㅂ', 'ㅄ', 'ㅅ', 'ㅆ',
                        'ㅇ', 'ㅈ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
-
+            
             const ga = 44032;
             var uni = new Array(kor.length);
             for (var i = 0; i < kor.length; i++){
-
+                
                 uni[i] = kor[i].charCodeAt(0);
 
                 uni[i] = uni[i] - ga;
             }
-
+            
             var check = /[가-힣]/;
             var newString = '';
-
+            
             for (var i = 0; i < kor.length; i++){
                 if (/[ㄱ-ㅎ]/.test(kor[i]) && !check.test(kor[i])){
                     newString += String.fromCharCode(uni[i] + ga);
                     continue;
-                }
-
+                }    
+                
                 if (check.test(kor[i])){
                     newString += (f[parseInt(uni[i] / 588)] + s[parseInt((uni[i] - (parseInt(uni[i] / 588) * 588)) / 28)] + t[parseInt(uni[i] % 28)]);
                 }
