@@ -8,16 +8,17 @@
     <script>
         function init(){
             let content = {value : `{{pageData.content}}`};
+            console.log(content);
             content.value = content.value.replace(/(\n)/gi, '$1<br>');
 
             console.log(content.value);
 
             // 취소선
-            const del = /\~{2}(.*?)+\~{2}/gi
+            const del = /\~{2}(.*?)\~{2}/gi
             content.value = content.value.replace(del, '<del style="color:gray;">$1</del>');
 
             // 볼드체
-            const bold = /\&#39;&#39;&#39;(.*?)\&#39;&#39;&#39;/gi
+            const bold = /\&#x27;&#x27;&#x27;(.*?)\&#x27;&#x27;&#x27;/gi
             content.value = content.value.replace(bold, '<b>$1</b>');
 
             console.log(content.value);
@@ -30,7 +31,12 @@
             const subtitle = /\={2,3}(.*?)\={2,3}/gi
             const subtitleComponents = subtitleComponent(content.value.match(subtitle), subtitle, content)
 
+            // 주석
+            const remark = /\[{1}[\s]?\*{1}(.*?)\]{1}/gi
+            const remarkComponents = remarkComponent(content.value.match(remark), remark, content)
 
+            const list = /[\s]{1}\*{1}/gi
+            content.value = content.value.replace(list, '<div class="list-item"></div>');
 
             let contentDiv = document.getElementsByClassName('content')[0];
             contentDiv.innerHTML = content.value;
@@ -38,11 +44,12 @@
 
         function anchorComponent(anchors, regex, content){
             let components = [];
-            anchors.map((a, i) => {
-                components[i] = a.replace(regex, '$1')
-            });
 
-            console.log(components);
+            if (anchors !== null){
+                anchors.map((a, i) => {
+                    components[i] = a.replace(regex, '$1')
+                });
+            }
 
             const checkAnchorNickname = /(.*)\|{1}(.*?)/gi
 
@@ -116,23 +123,25 @@
             let subtitleChildCount = 0;
             let subtitleCount = 0;
 
-            for(let i = 0; i < subtitles.length; i++){
-                if (!ssubtitlesRegex.test(subtitles[i])){ // ==
-                    subtitleCount++;
+            if (subtitles !== null){
+                for(let i = 0; i < subtitles.length; i++){
+                    if (!ssubtitlesRegex.test(subtitles[i])){ // ==
+                        subtitleCount++;
 
-                    components[i] = `<h1 class="subtitle"><a id="s-${subtitleCount}" class="subtitle-number" href="#toc">${subtitleCount}.</a><div class="subtitle-content">${subtitles[i].replace(regex, '$1')}</div></h1><hr>`;
+                        components[i] = `<h1 class="subtitle"><a id="s-${subtitleCount}" class="subtitle-number" href="#toc">${subtitleCount}.</a><div class="subtitle-content">${subtitles[i].replace(regex, '$1')}</div></h1><hr>`;
 
-                    createContentListAnchor(subtitles[i].replace(regex, '$1'), subtitleCount);
+                        createContentListAnchor(subtitles[i].replace(regex, '$1'), subtitleCount);
 
-                    subtitleChildCount = 0;
-                }
-                else{ // ===
-                    subtitleChildCount++;
+                        subtitleChildCount = 0;
+                    }
+                    else{ // ===
+                        subtitleChildCount++;
 
-                    components[i] = `<h2 class="subtitle"><a id="s-${subtitleCount}-${subtitleChildCount}" class="subtitle-number2" href="#toc">${subtitleCount}.${subtitleChildCount}.</a><div class="subtitle-content2">${subtitles[i].replace(ssubtitlesRegex, '$1')}</div></h1><hr>`;
+                        components[i] = `<h2 class="subtitle"><a id="s-${subtitleCount}-${subtitleChildCount}" class="subtitle-number2" href="#toc">${subtitleCount}.${subtitleChildCount}.</a><div class="subtitle-content2">${subtitles[i].replace(ssubtitlesRegex, '$1')}</div></h1><hr>`;
 
-                    createContentListAnchor(subtitles[i].replace(ssubtitlesRegex, '$1'), subtitleCount, subtitleChildCount);
+                        createContentListAnchor(subtitles[i].replace(ssubtitlesRegex, '$1'), subtitleCount, subtitleChildCount);
 
+                    }
                 }
             }
 
@@ -170,16 +179,52 @@
 
             contentList.appendChild(wrapperDiv);
             history.scrollRestoration = "manual"
-    }
+        }
+
+        function remarkComponent(remarks, regex, content){
+            let components = [];
+
+            let remarkCount = 0;
+
+            if (remarks !== null){
+                for(let i = 0; i < remarks.length; i++){
+                    remarkCount++;
+
+                    components[i] = `<div class="remark-container"><div class="remark-pop-up" id="remark-pop-up-${remarkCount}" onmouseover="document.getElementsByClassName('remark-pop-up')[${remarkCount - 1}].style.display = 'inline-block';" onmouseout="document.getElementsByClassName('remark-pop-up')[${remarkCount - 1}].style.display = 'none';"><a class="remark-anchor" href="#remark-${remarkCount}">[${remarkCount}]</a> ${remarks[i].replace(regex, '$1')}</div><a class="remark-anchor" href="#remark-${remarkCount}" id="remark-in-content-${remarkCount}" onmouseover="document.getElementsByClassName('remark-pop-up')[${remarkCount - 1}].style.display = 'inline-block';" onmouseout="document.getElementsByClassName('remark-pop-up')[${remarkCount - 1}].style.display = 'none';"><sup>[${remarkCount}]</sup></a></div>`;
+
+                    createRemarkAnchor(remarks[i].replace(regex, '$1'), remarkCount);
+                }
+            }
+            components.map((component) => {
+                content.value = content.value.replace(/\[{1}[\s]?\*{1}(.*?)\]{1}/i, component);
+            });
+        }
+
+        function createRemarkAnchor(contentListElement, i){
+            var wrapperDiv = document.createElement('div');
+            wrapperDiv.setAttribute('class', 'remark-wrapper');
+
+            var remarkNumber = document.createElement('a');
+            remarkNumber.innerHTML = '[' + i + ']';
+            remarkNumber.setAttribute('class', 'remark-number');
+            remarkNumber.setAttribute('href', '#remark-in-content-' + i);
+            remarkNumber.setAttribute('id', 'remark-' + i);
+
+            var remark = document.createElement('div');
+            remark.appendChild(remarkNumber);
+
+            remark.innerHTML = remark.innerHTML + "&nbsp;" + contentListElement;
+            remark.setAttribute('class', 'remark-content');
+            wrapperDiv.appendChild(remark);
+
+
+            var remarkDiv = document.getElementsByClassName('remark')[0];
+            remarkDiv.appendChild(wrapperDiv);
+        }
 
         function checkURL(url){
             //url 유효성 검사
-              var pattern = new RegExp('^(https?:\\/\\/)?'+ // protocol
-                '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|'+ // domain name
-                '((\\d{1,3}\\.){3}\\d{1,3}))'+ // OR ip (v4) address
-                '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*'+ // port and path
-                '(\\?[;&a-z\\d%_.~+=-]*)?'+ // query string
-                '(\\#[-a-z\\d_]*)?$','i'); // fragment locator
+              const pattern = /(http(s)?:\/\/)([a-z0-9\w]+\.*)+[a-z0-9]{2,4}/gi
 
             return pattern.test(url);
         }
