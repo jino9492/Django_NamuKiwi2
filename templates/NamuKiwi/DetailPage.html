@@ -38,6 +38,9 @@
             const list = /[\s]{1}\*{1}/gi
             content.value = content.value.replace(list, '<div class="list-item"></div>');
 
+            const quote = /[\s]{1}\&gt;{1}(.*)+[<br>]{0,1}/gi
+            content.value = content.value.replace(quote, '<div class="quote">$1</div>');
+
             let contentDiv = document.getElementsByClassName('content')[0];
             contentDiv.innerHTML = content.value;
         }
@@ -67,11 +70,13 @@
 
                     components[idx] = `<div class="tool-tip" id="tool-tip${idx}">링크 : ${url}</div><a href="${url}" class="anchor anchor-valid anchor-url" target="_blank" onmouseover=anchorMouseOver(${idx}) onmouseout=anchorMouseOut(${idx})><div class="tool-tip_icon">&#8766</div>${(hasNickname? nickname:url).trim()}</a>`;
 
+
                 }
                 else{
-
-                    const baseURL = 'https://namukiwi.run.goorm.io/';
+                    console.log("asdf" + url);
+                    const baseURL = '/';
                     const newURL = baseURL + url + '/';
+                    console.log(newURL);
 
                     let string = new Array();
                     string.push(`{% for data in pageDataList %} {{data.subject}} {% endfor %}`);
@@ -480,6 +485,15 @@
 
             pointer-events: none;
             user-select: none;
+        }
+
+        .quote{
+            display: inline-block;
+            padding : 20px;
+            margin: 5px;
+            background-color: #eee;
+            border-left: 4px solid;
+            border-color: #192842;
         }
     </style>
 </head>
