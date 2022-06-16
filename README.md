@@ -4,7 +4,7 @@
 ```
 Developer | 정진오
 Language  | python, html, css, js (Django)
-Tool      | groomIDE
+Tool      | Vscode
 ```
 
 ## 프로젝트 개요 ##
